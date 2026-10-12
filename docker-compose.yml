@@ -1,0 +1,53 @@
+# RideFlow local development environment.
+# Runs PostgreSQL and (optionally) the backend API.
+# The mobile app runs OUTSIDE docker (Expo on your machine/phone).
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: rideflow-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-rideflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rideflow_dev_pw}
+      POSTGRES_DB: ${POSTGRES_DB:-rideflow}
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - rideflow_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-rideflow} -d ${POSTGRES_DB:-rideflow}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    container_name: rideflow-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-rideflow}:${POSTGRES_PASSWORD:-rideflow_dev_pw}@db:5432/${POSTGRES_DB:-rideflow}?schema=public
+      API_PORT: 4000
+      JWT_SECRET: ${JWT_SECRET:-change_me_dev_only_secret}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      DEMO_LOGIN_ENABLED: ${DEMO_LOGIN_ENABLED:-true}
+      OFFER_TIMEOUT_SECONDS: ${OFFER_TIMEOUT_SECONDS:-20}
+      SIM_TICK_MS: ${SIM_TICK_MS:-2000}
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+    ports:
+      - '${API_PORT:-4000}:4000'
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:4000/api/health || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    # Entry runs migrations + seed then starts the server (see Dockerfile CMD).
+
+volumes:
+  rideflow_db_data:

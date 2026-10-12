@@ -1,0 +1,30 @@
+node_modules/
+dist/
+dist-seed/
+dist-web/
+build/
+.next/
+.expo/
+install.log
+export.log
+.turbo/
+coverage/
+*.log
+*.tsbuildinfo
+
+# env
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# prisma
+services/api/prisma/*.db
+
+# editor
+.idea/
+*.swp

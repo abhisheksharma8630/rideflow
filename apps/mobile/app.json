@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "RideFlow",
+    "slug": "rideflow",
+    "scheme": "rideflow",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": false,
+    "splash": {
+      "backgroundColor": "#FFC107"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.rideflow.demo",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "RideFlow uses your location to set your pickup point."
+      }
+    },
+    "android": {
+      "package": "com.rideflow.demo",
+      "adaptiveIcon": {
+        "backgroundColor": "#FFC107"
+      },
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "RideFlow uses your location to set your pickup point."
+        }
+      ]
+    ],
+    "extra": {
+      "apiUrl": "http://localhost:4000"
+    }
+  }
+}

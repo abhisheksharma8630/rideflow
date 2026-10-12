@@ -1,0 +1,26 @@
+{
+  "name": "rideflow",
+  "version": "0.1.0",
+  "private": true,
+  "description": "RideFlow - Rapido-inspired ride-hailing prototype (monorepo)",
+  "workspaces": [
+    "packages/*",
+    "services/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose down",
+    "db:reset": "npm run -w @rideflow/api prisma:reset",
+    "api:dev": "npm run -w @rideflow/api start:dev",
+    "api:migrate": "npm run -w @rideflow/api prisma:migrate",
+    "api:seed": "npm run -w @rideflow/api prisma:seed",
+    "api:test": "npm run -w @rideflow/api test",
+    "admin:dev": "npm run -w @rideflow/admin dev",
+    "mobile:dev": "npm run -w @rideflow/mobile start",
+    "build:packages": "npm run -w @rideflow/shared-types build && npm run -w @rideflow/validation build && npm run -w @rideflow/config build"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

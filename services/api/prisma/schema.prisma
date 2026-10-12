@@ -1,0 +1,248 @@
+// RideFlow Prisma schema (PostgreSQL).
+// Prototype notice: no production PII beyond name/phone/email. No passwords stored
+// (demo login only). Fare values are snapshotted onto rides at booking time.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  DRIVER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum DriverApprovalStatus {
+  PENDING
+  APPROVED
+  SUSPENDED
+}
+
+enum DriverAvailabilityStatus {
+  OFFLINE
+  ONLINE
+  ON_TRIP
+}
+
+enum VehicleCategory {
+  BIKE
+  AUTO
+  CAB
+}
+
+enum VehicleStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum RideStatus {
+  REQUESTED
+  SEARCHING
+  ACCEPTED
+  ARRIVED_AT_PICKUP
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_DRIVERS
+}
+
+enum RideOfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  ONLINE_DEMO
+}
+
+enum PaymentStatus {
+  PENDING
+  COLLECTED
+  FAILED
+}
+
+model User {
+  id        String     @id @default(cuid())
+  name      String
+  phone     String     @unique
+  email     String?    @unique
+  role      UserRole
+  status    UserStatus @default(ACTIVE)
+  isDemo    Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  driver         Driver?
+  customerRides  Ride[]         @relation("CustomerRides")
+  ratingsGiven   Rating[]       @relation("CustomerRatings")
+  notifications  Notification[]
+
+  @@index([role])
+  @@index([status])
+}
+
+model Driver {
+  id                 String                   @id @default(cuid())
+  userId             String                   @unique
+  user               User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  approvalStatus     DriverApprovalStatus     @default(PENDING)
+  availabilityStatus DriverAvailabilityStatus @default(OFFLINE)
+  rating             Float                    @default(5)
+  totalTrips         Int                      @default(0)
+  currentLat         Float?
+  currentLng         Float?
+  lastLocationAt     DateTime?
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+
+  vehicle   Vehicle?
+  rides     Ride[]       @relation("DriverRides")
+  offers    RideOffer[]
+  ratings   Rating[]     @relation("DriverRatings")
+
+  @@index([approvalStatus])
+  @@index([availabilityStatus])
+}
+
+model Vehicle {
+  id                 String          @id @default(cuid())
+  driverId           String          @unique
+  driver             Driver          @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  category           VehicleCategory
+  registrationNumber String          @unique
+  model              String
+  color              String
+  status             VehicleStatus   @default(ACTIVE)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  @@index([category])
+}
+
+model Ride {
+  id                       String      @id @default(cuid())
+  customerId               String
+  customer                 User        @relation("CustomerRides", fields: [customerId], references: [id])
+  driverId                 String?
+  driver                   Driver?     @relation("DriverRides", fields: [driverId], references: [id])
+  vehicleCategory          VehicleCategory
+  pickupAddress            String
+  pickupLat                Float
+  pickupLng                Float
+  destinationAddress       String
+  destinationLat           Float
+  destinationLng           Float
+  estimatedDistanceKm      Float
+  estimatedDurationMinutes Int
+  estimatedFare            Float
+  finalFare                Float?
+  // Fare snapshot (so later FareRule edits never rewrite history)
+  snapshotBaseFare         Float
+  snapshotPerKmRate        Float
+  snapshotPerMinuteRate    Float
+  snapshotMinimumFare      Float
+  estimatedWithoutRouting  Boolean     @default(true)
+  status                   RideStatus  @default(REQUESTED)
+  cancellationReason       String?
+  cancelledBy              UserRole?
+  requestedAt              DateTime    @default(now())
+  acceptedAt               DateTime?
+  arrivedAt                DateTime?
+  startedAt                DateTime?
+  completedAt              DateTime?
+  isDemoSeed               Boolean     @default(false)
+  createdAt                DateTime    @default(now())
+  updatedAt                DateTime    @updatedAt
+
+  offers   RideOffer[]
+  payment  Payment?
+  rating   Rating?
+
+  @@index([customerId])
+  @@index([driverId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([vehicleCategory])
+}
+
+model RideOffer {
+  id          String          @id @default(cuid())
+  rideId      String
+  ride        Ride            @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  driverId    String
+  driver      Driver          @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  status      RideOfferStatus @default(PENDING)
+  offeredAt   DateTime        @default(now())
+  respondedAt DateTime?
+  expiresAt   DateTime
+
+  @@unique([rideId, driverId])
+  @@index([status])
+  @@index([driverId])
+}
+
+model FareRule {
+  id              String          @id @default(cuid())
+  vehicleCategory VehicleCategory @unique
+  baseFare        Float
+  perKmRate       Float
+  perMinuteRate   Float
+  minimumFare     Float
+  enabled         Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  rideId            String        @unique
+  ride              Ride          @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  amount            Float
+  currency          String        @default("INR")
+  method            PaymentMethod @default(CASH)
+  status            PaymentStatus @default(PENDING)
+  providerReference String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}
+
+model Rating {
+  id         String   @id @default(cuid())
+  rideId     String   @unique
+  ride       Ride     @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  customerId String
+  customer   User     @relation("CustomerRatings", fields: [customerId], references: [id])
+  driverId   String
+  driver     Driver   @relation("DriverRatings", fields: [driverId], references: [id])
+  score      Int
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  @@index([driverId])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
