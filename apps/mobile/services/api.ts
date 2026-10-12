@@ -121,10 +121,11 @@ export const api = {
     >('GET', '/fares', undefined, false);
   },
   estimate(vehicleCategory: VehicleCategory, pickup: GeoPoint, destination: GeoPoint) {
+    // Send only coordinates; the backend rejects extra fields (e.g. address) on GeoPoint.
     return request<FareBreakdown & { enabled: boolean }>('POST', '/fares/estimate', {
       vehicleCategory,
-      pickup,
-      destination,
+      pickup: { latitude: pickup.latitude, longitude: pickup.longitude },
+      destination: { latitude: destination.latitude, longitude: destination.longitude },
     });
   },
 
@@ -137,7 +138,15 @@ export const api = {
     destination: GeoPoint;
     paymentMethod?: 'CASH' | 'ONLINE_DEMO';
   }) {
-    return request<RideDTO>('POST', '/rides', input);
+    // Normalize coordinates so no extra fields (e.g. address) leak into GeoPoint.
+    return request<RideDTO>('POST', '/rides', {
+      vehicleCategory: input.vehicleCategory,
+      pickupAddress: input.pickupAddress,
+      pickup: { latitude: input.pickup.latitude, longitude: input.pickup.longitude },
+      destinationAddress: input.destinationAddress,
+      destination: { latitude: input.destination.latitude, longitude: input.destination.longitude },
+      paymentMethod: input.paymentMethod ?? 'CASH',
+    });
   },
   getRide(id: string) {
     return request<RideDTO>('GET', `/rides/${id}`);
