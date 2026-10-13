@@ -2,13 +2,14 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { Badge, Button, Card, Loading, Screen } from '../../components/ui';
+import { Badge, Button, Card, Loading, Screen, useScrollBottomPadding } from '../../components/ui';
 import { colors, radii, spacing, typography, VEHICLE_META } from '../../theme';
 import { useAuth } from '../../store/auth';
 import { api, getApiBaseUrl } from '../../services/api';
 
 export default function DriverProfile() {
   const router = useRouter();
+  const bottomPad = useScrollBottomPadding();
   const logout = useAuth((s) => s.logout);
   const profile = useQuery({ queryKey: ['driver-me'], queryFn: () => api.driverMe() });
 
@@ -22,7 +23,10 @@ export default function DriverProfile() {
 
   return (
     <Screen padded={false}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg }}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ padding: spacing.lg, paddingBottom: bottomPad }}
+      >
         <View style={styles.header}>
           <View style={styles.avatar}>
             <Text style={{ fontSize: 30 }}>🧑‍✈️</Text>

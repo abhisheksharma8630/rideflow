@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Badge, Button, Card, ErrorState, Loading, Screen } from '../../../components/ui';
+import { Badge, Button, Card, ErrorState, Loading, Screen, useScrollBottomPadding } from '../../../components/ui';
 import { MiniMap } from '../../../components/MiniMap';
 import { colors, formatCurrency, radii, spacing, typography } from '../../../theme';
 import { api } from '../../../services/api';
@@ -20,6 +20,7 @@ export default function CustomerRide() {
   const [driverPos, setDriverPos] = useState<GeoPoint | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const [rated, setRated] = useState(false);
+  const bottomPad = useScrollBottomPadding();
 
   const ride = useQuery({
     queryKey: ['ride', id],
@@ -111,7 +112,11 @@ export default function CustomerRide() {
 
   return (
     <Screen padded={false}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ padding: spacing.lg, paddingBottom: bottomPad }}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.rowBetween}>
           <Text style={typography.h2}>{rideStatusLabel(r.status)}</Text>
           <Badge text={r.status} tone={rideStatusTone(r.status)} />

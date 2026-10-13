@@ -12,7 +12,7 @@ import {
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { Badge, Button, Card, Loading, Screen } from '../../components/ui';
+import { Badge, Button, Card, Loading, Screen, useScrollBottomPadding } from '../../components/ui';
 import { MiniMap } from '../../components/MiniMap';
 import { colors, formatCurrency, radii, spacing, typography, VEHICLE_META } from '../../theme';
 import { api } from '../../services/api';
@@ -26,6 +26,7 @@ type Step = 'pickup' | 'destination' | 'vehicle';
 export default function CustomerHome() {
   const router = useRouter();
   const user = useAuth((s) => s.user);
+  const bottomPad = useScrollBottomPadding();
 
   const [pickup, setPickup] = useState<NamedPlace | null>(null);
   const [destination, setDestination] = useState<NamedPlace | null>(null);
@@ -122,7 +123,11 @@ export default function CustomerHome() {
 
   return (
     <Screen padded={false}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ padding: spacing.lg, paddingBottom: bottomPad }}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <View>
             <Text style={typography.caption}>Hi {user?.name?.split(' ')[0] ?? 'there'} 👋</Text>

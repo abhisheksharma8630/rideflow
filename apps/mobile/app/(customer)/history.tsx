@@ -2,13 +2,14 @@ import React from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { Badge, Card, EmptyState, ErrorState, Loading, Screen } from '../../components/ui';
+import { Badge, Card, EmptyState, ErrorState, Loading, Screen, useScrollBottomPadding } from '../../components/ui';
 import { colors, formatCurrency, spacing, typography, VEHICLE_META } from '../../theme';
 import { api } from '../../services/api';
 import { rideStatusLabel, rideStatusTone } from '../../features/rideStatus';
 
 export default function History() {
   const router = useRouter();
+  const bottomPad = useScrollBottomPadding();
   const q = useQuery({ queryKey: ['my-rides'], queryFn: () => api.myRides(1, 50) });
 
   if (q.isLoading) return <Loading />;
@@ -28,7 +29,7 @@ export default function History() {
         <Text style={typography.caption}>Completed and cancelled trips</Text>
       </View>
       <FlatList
-        contentContainerStyle={{ padding: spacing.lg }}
+        contentContainerStyle={{ padding: spacing.lg, paddingBottom: bottomPad }}
         data={rides}
         keyExtractor={(r) => r.id}
         refreshing={q.isRefetching}

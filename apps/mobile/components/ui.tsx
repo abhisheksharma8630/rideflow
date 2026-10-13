@@ -10,8 +10,27 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs';
 import { colors, elevation, radii, spacing, typography } from '../theme';
+
+/**
+ * Bottom padding for scrollable content so the last items clear the bottom
+ * tab bar and the device's home-indicator safe area. Without this, content
+ * scrolls *under* the tab bar and the final rows feel unreachable.
+ *
+ * Reads the tab-bar height from context (null when a screen is not inside a
+ * bottom-tab navigator, e.g. a pushed stack screen) and falls back to the
+ * bottom safe-area inset. Using the context value instead of the
+ * useBottomTabBarHeight() hook keeps the hook order stable and avoids throwing
+ * outside a tab navigator.
+ */
+export function useScrollBottomPadding(extra = spacing.lg): number {
+  const insets = useSafeAreaInsets();
+  const tabBarHeight = React.useContext(BottomTabBarHeightContext) ?? 0;
+  const base = tabBarHeight > 0 ? tabBarHeight : insets.bottom;
+  return base + extra;
+}
 
 export function Screen({
   children,

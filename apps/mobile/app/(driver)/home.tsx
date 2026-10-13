@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Badge, Button, Card, Loading, Screen } from '../../components/ui';
+import { Badge, Button, Card, Loading, Screen, useScrollBottomPadding } from '../../components/ui';
 import { MiniMap } from '../../components/MiniMap';
 import { colors, formatCurrency, radii, spacing, typography, VEHICLE_META } from '../../theme';
 import { api } from '../../services/api';
@@ -16,6 +16,7 @@ export default function DriverHome() {
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [busy, setBusy] = useState(false);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const bottomPad = useScrollBottomPadding();
 
   const profile = useQuery({ queryKey: ['driver-me'], queryFn: () => api.driverMe() });
   const earnings = useQuery({ queryKey: ['driver-earnings'], queryFn: () => api.driverEarnings() });
@@ -154,7 +155,11 @@ export default function DriverHome() {
 
   return (
     <Screen padded={false}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ padding: spacing.lg, paddingBottom: bottomPad }}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={typography.h2}>Captain dashboard</Text>
         <Text style={typography.caption}>
           {profile.data?.user.name} · {profile.data?.vehicle ? VEHICLE_META[profile.data.vehicle.category].label : '—'}

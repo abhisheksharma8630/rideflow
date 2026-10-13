@@ -1,12 +1,13 @@
 import React from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import { Badge, Card, EmptyState, Loading, Screen } from '../../components/ui';
+import { Badge, Card, EmptyState, Loading, Screen, useScrollBottomPadding } from '../../components/ui';
 import { colors, formatCurrency, spacing, typography, VEHICLE_META } from '../../theme';
 import { api } from '../../services/api';
 import { rideStatusLabel, rideStatusTone } from '../../features/rideStatus';
 
 export default function Earnings() {
+  const bottomPad = useScrollBottomPadding();
   const earnings = useQuery({ queryKey: ['driver-earnings'], queryFn: () => api.driverEarnings() });
   const rides = useQuery({ queryKey: ['driver-rides'], queryFn: () => api.driverRides(1, 50) });
 
@@ -17,7 +18,7 @@ export default function Earnings() {
   return (
     <Screen padded={false}>
       <FlatList
-        contentContainerStyle={{ padding: spacing.lg }}
+        contentContainerStyle={{ padding: spacing.lg, paddingBottom: bottomPad }}
         data={completed}
         keyExtractor={(r) => r.id}
         ListHeaderComponent={

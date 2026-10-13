@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Button, Card, Field, Screen } from '../../components/ui';
+import { Button, Card, Field, Screen, useScrollBottomPadding } from '../../components/ui';
 import { colors, radii, spacing, typography } from '../../theme';
 import { useAuth } from '../../store/auth';
 import { api } from '../../services/api';
@@ -10,6 +10,7 @@ import { getApiBaseUrl } from '../../services/api';
 export default function Profile() {
   const router = useRouter();
   const user = useAuth((s) => s.user);
+  const bottomPad = useScrollBottomPadding();
   const setUser = useAuth((s) => s.setUser);
   const logout = useAuth((s) => s.logout);
   const [name, setName] = useState(user?.name ?? '');
@@ -36,7 +37,10 @@ export default function Profile() {
 
   return (
     <Screen padded={false}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg }}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ padding: spacing.lg, paddingBottom: bottomPad }}
+      >
         <View style={styles.header}>
           <View style={styles.avatar}>
             <Text style={{ fontSize: 30 }}>👤</Text>
