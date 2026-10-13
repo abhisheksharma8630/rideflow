@@ -11,25 +11,26 @@ import {
   ViewStyle,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs';
 import { colors, elevation, radii, spacing, typography } from '../theme';
+
+/** Approximate height of the expo-router bottom tab bar (content, excluding
+ *  the device safe-area inset which we add separately). */
+const TAB_BAR_HEIGHT = 50;
 
 /**
  * Bottom padding for scrollable content so the last items clear the bottom
  * tab bar and the device's home-indicator safe area. Without this, content
  * scrolls *under* the tab bar and the final rows feel unreachable.
  *
- * Reads the tab-bar height from context (null when a screen is not inside a
- * bottom-tab navigator, e.g. a pushed stack screen) and falls back to the
- * bottom safe-area inset. Using the context value instead of the
- * useBottomTabBarHeight() hook keeps the hook order stable and avoids throwing
- * outside a tab navigator.
+ * We size the padding from the bottom safe-area inset plus a fixed tab-bar
+ * allowance. This avoids depending on navigation internals (expo-router in
+ * SDK 57 no longer bundles @react-navigation/bottom-tabs or a tab-bar-height
+ * hook). Screens not inside the tab bar (e.g. the pushed ride-detail screen)
+ * simply get a bit of extra bottom breathing room, which is harmless.
  */
 export function useScrollBottomPadding(extra = spacing.lg): number {
   const insets = useSafeAreaInsets();
-  const tabBarHeight = React.useContext(BottomTabBarHeightContext) ?? 0;
-  const base = tabBarHeight > 0 ? tabBarHeight : insets.bottom;
-  return base + extra;
+  return insets.bottom + TAB_BAR_HEIGHT + extra;
 }
 
 export function Screen({

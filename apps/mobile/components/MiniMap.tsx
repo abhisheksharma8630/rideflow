@@ -222,7 +222,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#EAF1E8',
   },
   webview: { flex: 1, backgroundColor: '#EAF1E8' },
-  loading: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
+  loading: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   loadingText: { fontSize: 12, color: colors.muted, fontWeight: '600' },
   schematic: {
     backgroundColor: '#EAF1E8',
